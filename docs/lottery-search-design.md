@@ -2,7 +2,7 @@
 
 ## Problem
 
-Support search over 1M+ lottery tickets where each ticket is a 6-digit number. Queries are 6-character patterns containing digits and `*` wildcards, for example `****23`, `1****5`, and `123***`.
+Support search over 10M+ lottery tickets where each ticket is a 6-digit number. Queries are 6-character patterns containing digits and `*` wildcards, for example `****23`, `1****5`, and `123***`.
 
 The system must also prevent the same search pattern from assigning the same ticket to multiple users at the same time.
 
@@ -145,16 +145,16 @@ If a user confirms purchase, move `reserved` to `allocated` in a transaction.
 
 ## Performance
 
-The dataset size is 1M+ rows, but each query constrains at most 6 single-character columns. Selectivity improves with each fixed digit:
+The dataset size is 10M+ rows, but each query constrains at most 6 single-character columns. Selectivity improves with each fixed digit:
 
-| Fixed digits | Approximate candidate count over 1M |
+| Fixed digits | Approximate candidate count over 10M |
 | --- | ---: |
-| 1 | 100,000 |
-| 2 | 10,000 |
-| 3 | 1,000 |
-| 4 | 100 |
-| 5 | 10 |
-| 6 | 1 |
+| 1 | 1,000,000 |
+| 2 | 100,000 |
+| 3 | 10,000 |
+| 4 | 1,000 |
+| 5 | 100 |
+| 6 | 10 |
 
 With composite partial indexes on available rows, PostgreSQL can seek directly into the relevant digit combination and return the first available candidate. The allocation query is `O(log n + k)` where `k` is the number of locked or unavailable candidates skipped.
 
@@ -169,4 +169,4 @@ For very high concurrency, add:
 - A queue-based allocator per hot pattern to smooth spikes.
 - Sharding by ticket number range or hash if write throughput exceeds a single PostgreSQL primary.
 
-The baseline PostgreSQL design is sufficient for 1M+ records and provides strong correctness with simple operations.
+The baseline PostgreSQL design is sufficient for 10M+ records and provides strong correctness with simple operations.
